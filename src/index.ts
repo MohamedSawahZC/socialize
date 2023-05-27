@@ -1,17 +1,37 @@
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
-import { Post } from "./entities/Post";
 import mikroOrmConfig from "./mikro-orm.config";
-const main = async () => {
-  const orm = await MikroORM.init(mikroOrmConfig);
+import express from "express";
+import { ApolloServer } from "apollo-server-express/dist/ApolloServer";
+import { buildSchema } from "type-graphql";
+import { HelloResolver } from "./resolvers/hello";
 
-  const post = orm.em.create(Post, {
-    title: 'Welcome from first post',
-    createdAt: new Date().toString(),
-    updatedAt: new Date().toString(),
+const main = async () => {
+  // 1) Initialize orm
+  const orm = await MikroORM.init(mikroOrmConfig);
+  
+  // 2) Initialize migrations
+  await orm.getMigrator().up();
+
+  // 3) Express instance 
+  const app = express();
+
+  // 4) Config Apollo Server
+  const apolloServer =  new ApolloServer({
+    schema: await buildSchema({
+      resolvers: [HelloResolver],
+      validate: true,
+    }),
   });
 
-  await orm.em.persistAndFlush(post);
+  await apolloServer.start(); // Await the start method
+
+  apolloServer.applyMiddleware({ app });
+
+  // 5) Run server
+  app.listen(4000, () => {
+    console.log("⚡ Server is running on port 4000 ⚡");
+  });
 };
 
 main().catch((e) => {
