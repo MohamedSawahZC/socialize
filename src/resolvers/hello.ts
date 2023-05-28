@@ -4,7 +4,7 @@ import { Resolver ,Query} from "type-graphql";
 export class HelloResolver{
     @Query(() => String) // Provide explicit GraphQL type for the field
     hello(){
-        return "Hello World"
+        return "bye"
     }
 
 }

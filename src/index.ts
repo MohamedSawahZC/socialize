@@ -5,6 +5,8 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express/dist/ApolloServer";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
+import { PostResolver } from "./resolvers/post";
+import 'reflect-metadata';
 
 const main = async () => {
   // 1) Initialize orm
@@ -19,9 +21,10 @@ const main = async () => {
   // 4) Config Apollo Server
   const apolloServer =  new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver],
+      resolvers: [HelloResolver,PostResolver],
       validate: true,
     }),
+    context:()=>({em:orm.em})
   });
 
   await apolloServer.start(); // Await the start method
